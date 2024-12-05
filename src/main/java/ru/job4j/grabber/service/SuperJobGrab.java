@@ -10,6 +10,8 @@ public class SuperJobGrab implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         var store = (Store) context.getJobDetail().getJobDataMap().get("store");
+        HabrCareerParse parser = new HabrCareerParse();
+        parser.fetch().stream().forEach(store::save);
         for (var post : store.getAll()) {
             System.out.println(post.getTitle());
         }

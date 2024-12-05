@@ -19,10 +19,11 @@ public class JdbcStore implements Store {
 
     @Override
     public void save(Post post) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO post(name, text, link, created)"
-                       + "VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS
-        )) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO post(name, text, link, created)"
+                            + "VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS
+            );
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getDescription());
             statement.setString(3, post.getLink());
@@ -30,6 +31,7 @@ public class JdbcStore implements Store {
                 post.setTime(System.currentTimeMillis());
             }
             statement.setTimestamp(4, new Timestamp(post.getTime()));
+            statement.execute();
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     post.setId(generatedKeys.getLong(1));
@@ -43,18 +45,21 @@ public class JdbcStore implements Store {
     @Override
     public List<Post> getAll() {
         List<Post> list = new ArrayList<>();
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT * FROM post"
-        )) {
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    list.add(new Post(
-                            resultSet.getLong("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("link"),
-                            resultSet.getString("text"),
-                            resultSet.getTimestamp("created").getTime()
-                    ));
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT * FROM post"
+            );
+            {
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        list.add(new Post(
+                                resultSet.getLong("id"),
+                                resultSet.getString("name"),
+                                resultSet.getString("link"),
+                                resultSet.getString("text"),
+                                resultSet.getTimestamp("created").getTime()
+                        ));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -66,17 +71,20 @@ public class JdbcStore implements Store {
     @Override
     public Optional<Post> findById(Long id) {
         Post post = new Post();
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT FROM post WHERE id = ?"
-        )) {
-            statement.setLong(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    post.setId(resultSet.getLong("id"));
-                    post.setTitle(resultSet.getString("name"));
-                    post.setLink(resultSet.getString("link"));
-                    post.setDescription(resultSet.getString("text"));
-                    post.setTime(resultSet.getTimestamp("created").getTime());
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT FROM post WHERE id = ?"
+            );
+            {
+                statement.setLong(1, id);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        post.setId(resultSet.getLong("id"));
+                        post.setTitle(resultSet.getString("name"));
+                        post.setLink(resultSet.getString("link"));
+                        post.setDescription(resultSet.getString("text"));
+                        post.setTime(resultSet.getTimestamp("created").getTime());
+                    }
                 }
             }
         } catch (SQLException e) {
