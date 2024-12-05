@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HabrCareerParse implements Parse {
+
     private static final Logger LOG = Logger.getLogger(HabrCareerParse.class);
     private static final String SOURCE_LINK = "https://career.habr.com";
     private static final String PREFIX = "/vacancies?page=";
