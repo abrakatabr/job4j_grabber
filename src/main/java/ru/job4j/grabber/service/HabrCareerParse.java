@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class HabrCareerParse implements Parse {
 
@@ -38,10 +39,12 @@ public class HabrCareerParse implements Parse {
                     String dateTime = dateTimeElement.attr("datetime");
                     Long time = LocalDateTime.parse(dateTime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                             .atZone(ZoneId.systemDefault()).toInstant().getEpochSecond();
+                    var description = retrieveDescription(link);
                     var post = new Post();
                     post.setTitle(vacancyName);
                     post.setLink(link);
                     post.setTime(time);
+                    post.setDescription(description);
                     result.add(post);
                 });
             }
@@ -49,5 +52,24 @@ public class HabrCareerParse implements Parse {
             LOG.error("When load page", e);
         }
         return result;
+    }
+
+    private String retrieveDescription(String link) {
+        StringJoiner joiner = new StringJoiner(System.lineSeparator());
+        try {
+            var connection = Jsoup.connect(link);
+            var document = connection.get();
+            var description = document.select(".vacancy-description__text").first();
+            var descriptionElements = description.children();
+            descriptionElements.forEach(element -> {
+                        if (element.stream().anyMatch(e -> e.hasText())) {
+                            var list = element.getAllElements().eachText();
+                            list.stream().forEach(joiner::add);
+                        }
+                    });
+        } catch (IOException e) {
+            LOG.error("When load description", e);
+        }
+        return joiner.toString();
     }
 }
