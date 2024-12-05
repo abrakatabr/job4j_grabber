@@ -49,7 +49,6 @@ public class JdbcStore implements Store {
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT * FROM post"
             );
-            {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         list.add(new Post(
@@ -61,7 +60,6 @@ public class JdbcStore implements Store {
                         ));
                     }
                 }
-            }
         } catch (SQLException e) {
             LOG.error("When get list of posts from db", e);
         }
@@ -75,7 +73,6 @@ public class JdbcStore implements Store {
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT FROM post WHERE id = ?"
             );
-            {
                 statement.setLong(1, id);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
@@ -86,7 +83,6 @@ public class JdbcStore implements Store {
                         post.setTime(resultSet.getTimestamp("created").getTime());
                     }
                 }
-            }
         } catch (SQLException e) {
             LOG.error("When get post by id from db", e);
         }

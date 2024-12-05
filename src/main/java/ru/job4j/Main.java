@@ -23,7 +23,7 @@ public class Main {
             var connection = DriverManager.getConnection(
                     config.get("db.url"), config.get("db.username"), config.get("db.password")
             );
-            var store = new JdbcStore(connection);;
+            var store = new JdbcStore(connection);
             var scheduler = new SchedulerManager();
             scheduler.init();
             scheduler.load(
